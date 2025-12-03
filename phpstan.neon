@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    paths:
+        - app/
+    level: 8
+    ignoreErrors:
+        - '#PHPDoc tag @mixin contains unknown class App\\Models#'
+    excludePaths:
+        - tests
