@@ -6,16 +6,18 @@ use App\Models\Article;
 use App\Models\Bookmark;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         $user = User::factory()->create([
-            'name' => 'Misha',
-            'email' => 'mishaaa.pro@proton.me',
-            'password' => Hash::make('mishaa.pro@proton.me'),
+            'name' => 'mishaa.pro@proton.me',
+            'email' => 'mishaa.pro@proton.me',
+            'password' => 'mishaa.pro@proton.me',
+            'two_factor_confirmed_at' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_secret' => null,
         ]);
 
         $articles = Article::factory()->count(15)->create();

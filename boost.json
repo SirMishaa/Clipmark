@@ -1,11 +1,13 @@
 {
     "agents": [
         "claude_code",
-        "opencode"
+        "opencode",
+        "phpstorm"
     ],
     "editors": [
         "claude_code",
-        "opencode"
+        "opencode",
+        "phpstorm"
     ],
     "guidelines": [
         "laravel/fortify"

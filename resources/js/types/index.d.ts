@@ -24,6 +24,13 @@ export type AppPageProps<
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    bookmarks?: Array<models.Bookmark & { bookmarkable?: models.Article }>;
+    bookmarksStats: {
+        total: number;
+        starred: number;
+        archived: number;
+        unread: number;
+    };
 };
 
 export interface User {
