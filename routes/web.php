@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookmarkController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -24,5 +25,9 @@ Route::get('dashboard', function () {
 Route::get('design-system', function () {
     return Inertia::render('DesignSystem');
 })->middleware(['auth', 'verified'])->name('design-system');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
+});
 
 require __DIR__.'/settings.php';

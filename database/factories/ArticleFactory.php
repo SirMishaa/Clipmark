@@ -50,7 +50,7 @@ class ArticleFactory extends Factory
             'reading_time' => $readingTime,
             'word_count' => $wordCount,
             'language' => fake()->randomElement(['en', 'fr', 'es', 'de']),
-            'featured_image_url' => fake()->optional(0.7)->imageUrl(1200, 630),
+            'featured_image_url' => 'https://picsum.photos/seed/'.fake()->unique()->numberBetween(1, 10000).'/800/400',
             'favicon_url' => fake()->optional(0.9)->imageUrl(32, 32),
             'metadata' => [
                 'og:title' => $title,

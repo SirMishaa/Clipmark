@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Bookmarkable;
 use Database\Factories\ArticleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Article extends Model
 {
+    use Bookmarkable;
+
     /** @use HasFactory<ArticleFactory> */
     use HasFactory;
 
@@ -77,13 +80,15 @@ class Article extends Model
      */
     public function updateContent(string $newContent, array $additionalData = []): void
     {
-        if ($this->content && $this->hasContentChanged($newContent)) {
+        $newHash = hash('sha256', $newContent);
+
+        if ($this->content && $this->content_hash !== $newHash) {
             $this->createVersion();
         }
 
         $this->update([
             'content' => $newContent,
-            'content_hash' => hash('sha256', $newContent),
+            'content_hash' => $newHash,
             'last_fetched_at' => now(),
             ...$additionalData,
         ]);

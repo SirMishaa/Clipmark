@@ -19,14 +19,15 @@ class BookmarkFactory extends Factory
     {
         $savedAt = fake()->dateTimeBetween('-6 months', 'now');
         $isRead = fake()->boolean(40);
+        $isArchived = fake()->boolean(10);
 
         return [
             'user_id' => User::factory(),
-            'title' => fake()->sentence(),
-            'excerpt' => fake()->optional()->paragraph(),
+            'title' => fake()->optional(0.3)->sentence(),
+            'excerpt' => fake()->optional(0.2)->paragraph(),
             'is_starred' => fake()->boolean(20),
             'is_read' => $isRead,
-            'is_archived' => fake()->boolean(10),
+            'is_archived' => $isArchived,
             'read_at' => $isRead ? fake()->dateTimeBetween($savedAt, 'now') : null,
             'saved_at' => $savedAt,
         ];
