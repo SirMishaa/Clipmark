@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('bookmarks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('bookmarkable_type');
-            $table->unsignedBigInteger('bookmarkable_id');
+            $table->string('bookmarkable_type')->nullable();
+            $table->unsignedBigInteger('bookmarkable_id')->nullable();
 
             $table->string('title', 500)->nullable();
             $table->text('excerpt')->nullable();
+            $table->string('url', 2048);
             $table->boolean('is_starred')->default(false);
             $table->boolean('is_read')->default(false);
             $table->boolean('is_archived')->default(false);
@@ -30,6 +31,7 @@ return new class extends Migration
             // Indexes
             $table->index('user_id');
             $table->index(['bookmarkable_type', 'bookmarkable_id']);
+            $table->index('url');
             $table->index('title');
             $table->index('is_starred');
             $table->index('is_read');

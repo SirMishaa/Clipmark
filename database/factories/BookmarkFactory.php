@@ -25,6 +25,7 @@ class BookmarkFactory extends Factory
             'user_id' => User::factory(),
             'title' => fake()->optional(0.3)->sentence(),
             'excerpt' => fake()->optional(0.2)->paragraph(),
+            'url' => fake()->url(),
             'is_starred' => fake()->boolean(20),
             'is_read' => $isRead,
             'is_archived' => $isArchived,

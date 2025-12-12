@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @use HasFactory<ArticleFactory>
+ *
+ * @mixin IdeHelperArticle
  */
 class Article extends Model
 {

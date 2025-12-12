@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @use HasFactory<ArticleVersionFactory>
+ *
+ * @mixin IdeHelperArticleVersion
  */
 class ArticleVersion extends Model
 {

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @use HasFactory<BookmarkFactory>
+ *
+ * @mixin IdeHelperBookmark
  */
 class Bookmark extends Model
 {
@@ -21,6 +23,7 @@ class Bookmark extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'url',
         'user_id',
         'bookmarkable_type',
         'bookmarkable_id',
