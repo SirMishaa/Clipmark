@@ -20,9 +20,9 @@ class DatabaseSeeder extends Seeder
             'two_factor_secret' => null,
         ]);
 
-        $articles = Article::factory()->count(15)->create();
+        $articles = Article::factory()->count(50)->create();
 
-        foreach ($articles->take(10) as $index => $article) {
+        foreach ($articles->take(40) as $index => $article) {
             Bookmark::factory()
                 ->for($user)
                 ->for($article, 'bookmarkable')
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
                 ->create();
         }
 
-        $articles->random(3)->each(function ($article) {
+        $articles->random(4)->each(function ($article) {
             $article->createVersion();
         });
     }

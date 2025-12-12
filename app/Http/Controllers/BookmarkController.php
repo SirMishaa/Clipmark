@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BookmarkFilterRequest;
+use App\Http\Requests\StoreBookmarkRequest;
 use App\Models\User;
-use App\Requests\BookmarkFilterRequest;
+use App\Services\WebScraper;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,17 +29,17 @@ class BookmarkController extends Controller
         $tag = $bookmarkFilterRequest->input('tag');
 
         $bookmarks = $user->bookmarks()
-            ->orderBy(match ($sort) {
-                'date' => 'created_at',
-                'title' => 'title',
-                'relevance' => 'updated_at',
-                default => 'created_at',
+            ->orderBy(...match ($sort) {
+                'date' => ['created_at', 'desc'],
+                'title' => ['title', 'asc'],
+                'relevance' => ['updated_at', 'desc'],
+                default => ['created_at', 'desc'],
             })
             ->when($filter === 'starred', fn ($query) => $query->where('is_starred', true))
             ->when($filter === 'archived', fn ($query) => $query->where('is_archived', true))
             ->when($filter === 'unread', fn ($query) => $query->where('is_read', false))
             ->with('bookmarkable')
-            ->get();
+            ->paginate(15);
 
         /**
          * @var object{total: int, starred: int, archived: int, unread: int} $stats
@@ -57,5 +62,53 @@ class BookmarkController extends Controller
                 'unread' => $stats->unread,
             ],
         ]);
+    }
+
+    public function preview(Request $request, WebScraper $scraper): Response
+    {
+        $validated = $request->validate([
+            'url' => ['required', 'url', 'max:2048'],
+        ]);
+
+        $metadata = $scraper->extractMetadata($validated['url']);
+
+        $previewData = [
+            'url' => $validated['url'],
+            'title' => $metadata->title,
+            'excerpt' => $metadata->description,
+            /** Not implemented in the scraper yet */
+            'featured_image_url' => $metadata->image,
+            'author' => $metadata->author,
+            'site_name' => $metadata->siteName,
+        ];
+
+        return Inertia::render('Bookmarks/Index', [
+            'preview' => $previewData,
+        ]);
+    }
+
+    public function store(StoreBookmarkRequest $request): RedirectResponse
+    {
+
+        $user = $this->user($request);
+
+        $validated = $request->validated();
+
+        $bookmark = $user->bookmarks()->create([
+            'url' => $validated['url'],
+            'title' => $validated['title'] ?? null,
+            'excerpt' => $validated['excerpt'] ?? null,
+            'is_starred' => $validated['is_starred'] ?? false,
+            'is_read' => $validated['is_read'] ?? false,
+            'saved_at' => now(),
+        ]);
+
+        Log::info('New bookmark created', [
+            'user_id' => $user->id,
+            'title' => $bookmark->title,
+            'url' => $bookmark->url,
+        ]);
+
+        return redirect()->route('bookmarks.index')->with('success', 'Bookmark added successfully.');
     }
 }

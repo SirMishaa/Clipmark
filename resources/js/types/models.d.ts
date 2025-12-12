@@ -9,6 +9,7 @@ declare global {
             bookmarkable_type: string;
             bookmarkable_id: number;
             title: string | null;
+            url: string;
             excerpt: string | null;
             is_starred: boolean;
             is_read: boolean;

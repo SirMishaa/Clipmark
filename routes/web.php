@@ -19,7 +19,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
+    return redirect()->route('bookmarks.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('design-system', function () {
@@ -28,6 +28,10 @@ Route::get('design-system', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
+    Route::post('bookmarks/preview', [BookmarkController::class, 'preview'])->name('bookmarks.preview');
+    Route::post('bookmarks', [BookmarkController::class, 'store'])->name('bookmarks.store');
+    Route::patch('bookmarks/{bookmark}', [BookmarkController::class, 'update'])->name('bookmarks.update');
+    Route::delete('bookmarks/{bookmark}', [BookmarkController::class, 'destroy'])->name('bookmarks.destroy');
 });
 
 require __DIR__.'/settings.php';

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,10 +10,11 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Pagination } from '@/components/ui/pagination';
 import { useRelativeDate } from '@/composables/useRelativeDate';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { bookmarkSchema } from '@/schemas/bookmarks';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, WithPagination } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { type } from 'arktype';
 import {
@@ -28,15 +30,17 @@ import {
 import { onMounted, ref } from 'vue';
 
 interface Props {
-    bookmarks: Array<models.Bookmark & { bookmarkable?: models.Article }>;
+    bookmarks: {
+        data: Array<models.Bookmark & { bookmarkable?: models.Article }>;
+        links: Array<{ url: string | null; label: string; active: boolean }>;
+    } & WithPagination;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-    bookmarks: () => [],
-});
+const props = defineProps<Props>();
 
 onMounted(() => {
-    props.bookmarks.forEach((bookmark, index) => {
+    console.log(props.bookmarks);
+    props.bookmarks?.data?.forEach((bookmark, index) => {
         const result = bookmarkSchema(bookmark);
         if (result instanceof type.errors) {
             console.warn(
@@ -55,6 +59,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const viewMode = ref<'grid' | 'list'>('grid');
+const isAddBookmarkDialogOpen = ref(false);
+
+const openExternalLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+};
 
 const formatReadingTime = (seconds: number | null): string => {
     if (!seconds) return 'Unknown';
@@ -77,12 +86,16 @@ const formatReadingTime = (seconds: number | null): string => {
                         All Bookmarks
                     </h1>
                     <p class="mt-1 text-muted-foreground">
-                        {{ bookmarks.length }} bookmarks saved
+                        {{ bookmarks?.total ?? 0 }} bookmarks saved
                     </p>
                 </div>
 
                 <div class="flex flex-wrap gap-3">
-                    <Button variant="outline" size="sm">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        @click="isAddBookmarkDialogOpen = true"
+                    >
                         <Plus class="mr-2 size-4" />
                         Add Bookmark
                     </Button>
@@ -131,19 +144,21 @@ const formatReadingTime = (seconds: number | null): string => {
 
             <!-- Grid View -->
             <div
-                v-if="viewMode === 'grid'"
+                v-if="viewMode === 'grid' && bookmarks?.data"
                 class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
             >
                 <Card
-                    v-for="bookmark in bookmarks"
+                    v-for="bookmark in bookmarks.data"
                     :key="bookmark.id"
                     class="group overflow-hidden transition-all hover:shadow-lg"
                 >
                     <div class="relative aspect-video overflow-hidden bg-muted">
                         <img
-                            v-if="bookmark.bookmarkable.featured_image_url"
-                            :src="bookmark.bookmarkable.featured_image_url"
-                            :alt="bookmark.title || bookmark.bookmarkable.title"
+                            v-if="bookmark.bookmarkable?.featured_image_url"
+                            :src="bookmark.bookmarkable?.featured_image_url"
+                            :alt="
+                                bookmark.title || bookmark.bookmarkable?.title
+                            "
                             class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         <div
@@ -177,19 +192,28 @@ const formatReadingTime = (seconds: number | null): string => {
                             class="mb-2 flex items-start justify-between gap-2"
                         >
                             <Badge
-                                v-if="bookmark.bookmarkable.site_name"
+                                v-if="bookmark.bookmarkable?.site_name"
                                 variant="secondary"
                             >
-                                {{ bookmark.bookmarkable.site_name }}
+                                {{ bookmark.bookmarkable?.site_name }}
                             </Badge>
                         </div>
-                        <CardTitle class="line-clamp-2 text-lg leading-tight">
-                            {{ bookmark.title || bookmark.bookmarkable.title }}
+                        <CardTitle
+                            class="line-clamp-2 cursor-pointer text-lg leading-tight hover:underline"
+                            @click="
+                                () =>
+                                    openExternalLink(
+                                        bookmark.bookmarkable?.url ||
+                                            bookmark.url,
+                                    )
+                            "
+                        >
+                            {{ bookmark.title || bookmark.bookmarkable?.title }}
                         </CardTitle>
                         <CardDescription class="line-clamp-2 text-sm">
                             {{
                                 bookmark.excerpt ||
-                                bookmark.bookmarkable.excerpt
+                                bookmark.bookmarkable?.excerpt
                             }}
                         </CardDescription>
                     </CardHeader>
@@ -202,7 +226,7 @@ const formatReadingTime = (seconds: number | null): string => {
                                 <Clock class="size-3.5" />
                                 <span>{{
                                     formatReadingTime(
-                                        bookmark.bookmarkable.reading_time,
+                                        bookmark.bookmarkable?.reading_time,
                                     )
                                 }}</span>
                             </div>
@@ -218,7 +242,9 @@ const formatReadingTime = (seconds: number | null): string => {
                             as-child
                         >
                             <a
-                                :href="bookmark.bookmarkable.url"
+                                :href="
+                                    bookmark.bookmarkable?.url || bookmark.url
+                                "
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 v-if="!bookmark.is_archived"
@@ -238,9 +264,9 @@ const formatReadingTime = (seconds: number | null): string => {
             </div>
 
             <!-- List View -->
-            <div v-else class="flex flex-col gap-4">
+            <div v-else-if="bookmarks?.data" class="flex flex-col gap-4">
                 <Card
-                    v-for="bookmark in bookmarks"
+                    v-for="bookmark in bookmarks.data"
                     :key="bookmark.id"
                     class="group transition-all hover:shadow-md"
                     :class="bookmark.is_read ? 'opacity-60' : ''"
@@ -252,14 +278,16 @@ const formatReadingTime = (seconds: number | null): string => {
                             >
                                 <img
                                     v-if="
-                                        bookmark.bookmarkable.featured_image_url
+                                        bookmark.bookmarkable
+                                            ?.featured_image_url
                                     "
                                     :src="
-                                        bookmark.bookmarkable.featured_image_url
+                                        bookmark.bookmarkable
+                                            ?.featured_image_url
                                     "
                                     :alt="
                                         bookmark.title ||
-                                        bookmark.bookmarkable.title
+                                        bookmark.bookmarkable?.title
                                     "
                                     class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
@@ -278,13 +306,13 @@ const formatReadingTime = (seconds: number | null): string => {
                                     <div class="mb-2 flex items-center gap-2">
                                         <Badge
                                             v-if="
-                                                bookmark.bookmarkable.site_name
+                                                bookmark.bookmarkable?.site_name
                                             "
                                             variant="secondary"
                                             class="text-xs"
                                         >
                                             {{
-                                                bookmark.bookmarkable.site_name
+                                                bookmark.bookmarkable?.site_name
                                             }}
                                         </Badge>
                                         <span
@@ -301,7 +329,7 @@ const formatReadingTime = (seconds: number | null): string => {
                                     >
                                         {{
                                             bookmark.title ||
-                                            bookmark.bookmarkable.title
+                                            bookmark.bookmarkable?.title
                                         }}
                                     </h3>
                                     <p
@@ -309,7 +337,7 @@ const formatReadingTime = (seconds: number | null): string => {
                                     >
                                         {{
                                             bookmark.excerpt ||
-                                            bookmark.bookmarkable.excerpt
+                                            bookmark.bookmarkable?.excerpt
                                         }}
                                     </p>
                                 </div>
@@ -324,7 +352,7 @@ const formatReadingTime = (seconds: number | null): string => {
                                         <span>{{
                                             formatReadingTime(
                                                 bookmark.bookmarkable
-                                                    .reading_time,
+                                                    ?.reading_time,
                                             )
                                         }}</span>
                                     </div>
@@ -351,7 +379,7 @@ const formatReadingTime = (seconds: number | null): string => {
                                         >
                                             <a
                                                 :href="
-                                                    bookmark.bookmarkable.url
+                                                    bookmark.bookmarkable?.url
                                                 "
                                                 target="_blank"
                                                 rel="noopener noreferrer"
@@ -372,7 +400,7 @@ const formatReadingTime = (seconds: number | null): string => {
 
             <!-- Empty State -->
             <div
-                v-if="bookmarks.length === 0"
+                v-if="!bookmarks?.data || bookmarks.data.length === 0"
                 class="flex flex-col items-center justify-center py-12"
             >
                 <Bookmark class="mb-4 size-12 text-muted-foreground/50" />
@@ -380,11 +408,30 @@ const formatReadingTime = (seconds: number | null): string => {
                 <p class="mb-4 text-sm text-muted-foreground">
                     Start saving articles to see them here
                 </p>
-                <Button>
+                <Button @click="isAddBookmarkDialogOpen = true">
                     <Plus class="mr-2 size-4" />
                     Add Your First Bookmark
                 </Button>
             </div>
+
+            <!-- Pagination -->
+            <Pagination
+                v-if="
+                    bookmarks?.data &&
+                    bookmarks.data.length > 0 &&
+                    bookmarks.last_page >= 1
+                "
+                :links="bookmarks.links"
+                :current-page="bookmarks.current_page"
+                :last-page="bookmarks.last_page"
+                :total="bookmarks.total"
+                :from="bookmarks.from"
+                :to="bookmarks.to"
+                class="mt-8"
+            />
         </div>
+
+        <!-- Add Bookmark Dialog -->
+        <AddBookmarkDialog v-model:open="isAddBookmarkDialogOpen" />
     </AppLayout>
 </template>

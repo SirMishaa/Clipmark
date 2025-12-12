@@ -10,6 +10,20 @@ export interface BreadcrumbItem {
     href: string;
 }
 
+export interface WithPagination {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    first_page_url: string;
+    from: number;
+    last_page_url: string;
+    next_page_url: string | null;
+    path: string;
+    prev_page_url: string | null;
+    to: number;
+}
+
 export interface NavItem {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
