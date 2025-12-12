@@ -4,7 +4,6 @@ import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 import devtoolsJson from 'vite-plugin-devtools-json';
-import vueDevTools from 'vite-plugin-vue-devtools';
 
 export default defineConfig({
     plugins: [
@@ -17,6 +16,11 @@ export default defineConfig({
         wayfinder({
             formVariants: true,
         }),
+        // vueDevTools({
+        //     launchEditor: 'phpstorm',
+        //     componentInspector: true,
+        //     appendTo: 'resources/js/app.ts',
+        // }),
         vue({
             template: {
                 transformAssetUrls: {
@@ -24,11 +28,6 @@ export default defineConfig({
                     includeAbsolute: false,
                 },
             },
-        }),
-        vueDevTools({
-            launchEditor: 'phpstorm',
-            componentInspector: true,
-            appendTo: 'resources/js/app.ts',
         }),
         /** For chrome workspace automatic discovery */
         devtoolsJson(),
