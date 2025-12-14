@@ -6,7 +6,7 @@
             "enabled": true,
             "command": [
                 "wsl.exe",
-                "/usr/bin/php",
+                "/opt/php85-zts/bin/php",
                 "/home/mishaa/dev/Clipmark/artisan",
                 "boost:mcp"
             ]

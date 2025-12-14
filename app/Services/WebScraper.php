@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\DataTransferObjects\PageMetadata;
+use Exception;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class WebScraper
@@ -18,7 +20,7 @@ class WebScraper
         ];
 
         try {
-
+            /** @var Response $response */
             $response = Http::timeout(5)
                 ->withOptions(['stream' => true])
                 ->get($url);
@@ -65,7 +67,7 @@ class WebScraper
                 $metadata['description'] = trim(html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             report($e);
         }
 
