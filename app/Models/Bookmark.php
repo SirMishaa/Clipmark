@@ -107,9 +107,9 @@ class Bookmark extends Model
     {
         return $query
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw('SUM(CASE WHEN is_starred = 1 THEN 1 ELSE 0 END) as starred')
-            ->selectRaw('SUM(CASE WHEN is_archived = 1 THEN 1 ELSE 0 END) as archived')
-            ->selectRaw('SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread');
+            ->selectRaw('SUM(CASE WHEN is_starred THEN 1 ELSE 0 END) as starred')
+            ->selectRaw('SUM(CASE WHEN is_archived THEN 1 ELSE 0 END) as archived')
+            ->selectRaw('SUM(CASE WHEN NOT is_read THEN 1 ELSE 0 END) as unread');
     }
 
     public function markAsRead(): void
