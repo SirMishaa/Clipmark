@@ -6,6 +6,7 @@ use App\DataTransferObjects\PageMetadata;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Log;
 
 class WebScraper
 {
@@ -17,6 +18,7 @@ class WebScraper
         $metadata = [
             'title' => null,
             'description' => null,
+            'image' => null,
         ];
 
         try {
@@ -45,6 +47,13 @@ class WebScraper
                     }
                 }
 
+                // Extract og:image if not found yet
+                if (! isset($metadata['image']) && stripos($buffer, 'og:image') !== false) {
+                    if (preg_match('/<meta[^>]*property=["\']og:image["\'][^>]*content=["\'](.*?)["\']/is', $buffer, $matches)) {
+                        $metadata['image'] = trim(html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                    }
+                }
+
                 // Stop if everything found or reached </head>
                 if (($metadata['title'] !== null && $metadata['description'] !== null) || stripos($buffer, '</head>') !== false) {
                     break;
@@ -68,12 +77,14 @@ class WebScraper
             }
 
         } catch (Exception $e) {
+            Log::warning('WebScraper failed to extract metadata', ['url' => $url, 'error' => $e->getMessage()]);
             report($e);
         }
 
         return new PageMetadata(
             title: $metadata['title'],
             description: $metadata['description'],
+            image: $metadata['image']
         );
     }
 }

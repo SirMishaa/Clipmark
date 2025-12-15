@@ -38,6 +38,7 @@ const isLoadingPreview = ref<boolean>(false);
 const previewData = ref<{
     title?: string;
     excerpt?: string;
+    featured_image_url?: string;
 } | null>(null);
 
 // Debounced function to stop loading with minimum delay
@@ -80,14 +81,13 @@ const handlePasteLink = (event: ClipboardEvent) => {
                 const data = page.props.preview as {
                     title?: string;
                     excerpt?: string;
+                    featured_image_url?: string;
                 };
                 previewData.value = {
                     title: data?.title,
                     excerpt: data?.excerpt,
+                    featured_image_url: data?.featured_image_url,
                 };
-                console.log('Fetched preview data:', data);
-                console.log(page.props);
-                console.log(page.props.flash?.preview);
             },
             onError: (errors) => {
                 console.error('Failed to fetch preview:', errors);
@@ -110,6 +110,36 @@ const handlePasteLink = (event: ClipboardEvent) => {
                     we'll fetch the details.
                 </DialogDescription>
             </DialogHeader>
+
+            <!-- Image Preview -->
+            <div
+                v-if="previewData?.featured_image_url || isLoadingPreview"
+                class="overflow-hidden rounded-lg border border-border bg-muted/30"
+            >
+                <div
+                    class="relative aspect-video w-full"
+                    :class="{
+                        'animate-pulse bg-muted/50': isLoadingPreview,
+                    }"
+                >
+                    <img
+                        v-if="
+                            previewData?.featured_image_url && !isLoadingPreview
+                        "
+                        :src="previewData.featured_image_url"
+                        :alt="previewData?.title || 'Preview image'"
+                        class="size-full object-cover"
+                    />
+                    <div
+                        v-if="isLoadingPreview"
+                        class="absolute inset-0 flex items-center justify-center"
+                    >
+                        <Loader2
+                            class="size-8 animate-spin text-muted-foreground"
+                        />
+                    </div>
+                </div>
+            </div>
 
             <Form
                 :action="store()"

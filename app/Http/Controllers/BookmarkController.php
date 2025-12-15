@@ -69,8 +69,8 @@ class BookmarkController extends Controller
             'url' => $validated['url'],
             'title' => $metadata->title,
             'excerpt' => $metadata->description,
-            /** Not implemented in the scraper yet */
             'featured_image_url' => $metadata->image,
+            /** Not implemented in the scraper yet */
             'author' => $metadata->author,
             'site_name' => $metadata->siteName,
         ];
