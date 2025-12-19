@@ -24,7 +24,7 @@ interface Props {
     open?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     open: false,
     preview: null,
 });
